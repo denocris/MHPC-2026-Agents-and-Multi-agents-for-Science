@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Course-specific data (large, regenerated locally)
+data/papers/
+chroma_db/
+*.pdf
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
