@@ -79,27 +79,68 @@ def search_arxiv(query: str, max_results: int = 5) -> list[dict[str, Any]]:
             "Install it with: pip install arxiv"
         ) from exc
 
+    import time
+
     search = arxiv.Search(
         query=query,
         max_results=max_results,
         sort_by=arxiv.SortCriterion.Relevance,
     )
 
-    results: list[dict[str, Any]] = []
-    # arxiv.Client is the modern entry point (arxiv>=2.x)
-    client = arxiv.Client(page_size=max_results, delay_seconds=3.0, num_retries=3)
-    for r in client.results(search):
-        results.append(
-            {
-                "title": r.title.strip().replace("\n", " "),
-                "authors": [a.name for a in r.authors],
-                "abstract": r.summary.strip().replace("\n", " "),
-                "arxiv_id": r.get_short_id(),
-                "url": r.entry_id,
-                "published": r.published.date().isoformat() if r.published else None,
-            }
-        )
-    return results
+    # arXiv rate-limits aggressively: 1 request per 3 s per IP, and once
+    # tripped the limit can persist for several minutes. We therefore:
+    #   (a) space page requests by 5 s (comfortably above arXiv's 3 s),
+    #   (b) retry up to 3 times with exponential backoff on HTTP 429, and
+    #   (c) if the API is still refusing us, return a graceful error
+    #       record *instead of raising* so the agent can fall back to
+    #       search_papers on the local corpus or explain to the user.
+    def _one_attempt() -> list[dict[str, Any]]:
+        client = arxiv.Client(page_size=max_results, delay_seconds=5.0, num_retries=3)
+        out: list[dict[str, Any]] = []
+        for r in client.results(search):
+            out.append(
+                {
+                    "title": r.title.strip().replace("\n", " "),
+                    "authors": [a.name for a in r.authors],
+                    "abstract": r.summary.strip().replace("\n", " "),
+                    "arxiv_id": r.get_short_id(),
+                    "url": r.entry_id,
+                    "published": r.published.date().isoformat() if r.published else None,
+                }
+            )
+        return out
+
+    backoff = 10.0  # seconds before the first retry; doubles each time
+    last_err: Exception | None = None
+    for attempt in range(1, 4):  # up to 3 tries
+        try:
+            return _one_attempt()
+        except arxiv.HTTPError as exc:
+            last_err = exc
+            if getattr(exc, "status", None) == 429 and attempt < 3:
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+            break
+        except Exception as exc:  # noqa: BLE001 -- we genuinely want to swallow
+            last_err = exc
+            break
+
+    # All retries exhausted -- return a structured error the agent can read.
+    return [
+        {
+            "error": f"arXiv API call failed: {type(last_err).__name__}: {last_err}",
+            "hint": (
+                "arXiv is likely rate-limiting this IP. Rate limits typically "
+                "clear within 15-30 minutes. In the meantime, try the "
+                "`search_papers` tool to query the local RAG corpus of "
+                "pre-downloaded Ising-model papers, or rephrase the query and "
+                "retry in a few minutes."
+            ),
+            "query": query,
+            "max_results": max_results,
+        }
+    ]
 
 
 # ======================================================================
