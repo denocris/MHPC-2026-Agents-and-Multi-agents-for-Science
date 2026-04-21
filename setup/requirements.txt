@@ -43,6 +43,8 @@ tiktoken==0.8.0
 # --- MCP (Module 1.3) ---
 # Official Model Context Protocol Python SDK
 mcp==1.0.0
+# Bridge between MCP servers and smolagents' ToolCollection.from_mcp()
+mcpadapt==0.1.19
 
 # --- arXiv search (Module 1.3) ---
 arxiv==2.1.3
