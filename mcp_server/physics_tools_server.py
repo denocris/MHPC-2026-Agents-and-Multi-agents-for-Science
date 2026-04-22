@@ -53,18 +53,40 @@ mcp = FastMCP("physics-tools")
 # Tool 1: search_arxiv
 # ======================================================================
 @mcp.tool()
-def search_arxiv(query: str, max_results: int = 5) -> list[dict[str, Any]]:
+def search_arxiv(query: str, max_results: int = 5) -> dict[str, Any]:
     """Search the arXiv preprint server and return the top results.
 
     Args:
         query: free-text search query (title/abstract/authors), e.g.
             "2D Ising model Monte Carlo" or "Wolff cluster algorithm".
+            For better precision use arXiv's field prefixes and quoted
+            phrases, e.g. ``ti:"Ising" AND abs:"neural network"``.
         max_results: maximum number of hits to return (1..20). Defaults to 5.
 
     Returns:
-        A list of dicts, each with keys: ``title``, ``authors`` (list of
-        strings), ``abstract``, ``arxiv_id``, ``url``, ``published`` (ISO
-        date string).
+        A dict of the form::
+
+            {
+              "query": "...",
+              "count": N,
+              "results": [
+                 {"title": ..., "authors": [...], "abstract": ...,
+                  "arxiv_id": ..., "url": ..., "published": "YYYY-MM-DD"},
+                 ...
+              ]
+            }
+
+        On transient failure (e.g. arXiv rate-limiting, HTTP 429), the
+        same shape is returned but with ``results == []`` and two extra
+        keys, ``"error"`` and ``"hint"``, so the caller can reason about
+        the failure in code instead of having to catch an exception.
+
+    Note on return shape: we deliberately wrap the list in a dict rather
+    than returning a bare ``list[dict]``. FastMCP serialises a list
+    return as *multiple* content blocks (one per element), and some MCP
+    clients — including smolagents' ``mcpadapt`` bridge — only read the
+    first block. Returning a single top-level dict guarantees the whole
+    payload arrives in one content block.
     """
     # Clamp max_results to a sane range so the agent can't DoS the arXiv API.
     max_results = max(1, min(int(max_results), 20))
@@ -114,7 +136,8 @@ def search_arxiv(query: str, max_results: int = 5) -> list[dict[str, Any]]:
     last_err: Exception | None = None
     for attempt in range(1, 4):  # up to 3 tries
         try:
-            return _one_attempt()
+            results = _one_attempt()
+            return {"query": query, "count": len(results), "results": results}
         except arxiv.HTTPError as exc:
             last_err = exc
             if getattr(exc, "status", None) == 429 and attempt < 3:
@@ -127,20 +150,20 @@ def search_arxiv(query: str, max_results: int = 5) -> list[dict[str, Any]]:
             break
 
     # All retries exhausted -- return a structured error the agent can read.
-    return [
-        {
-            "error": f"arXiv API call failed: {type(last_err).__name__}: {last_err}",
-            "hint": (
-                "arXiv is likely rate-limiting this IP. Rate limits typically "
-                "clear within 15-30 minutes. In the meantime, try the "
-                "`search_papers` tool to query the local RAG corpus of "
-                "pre-downloaded Ising-model papers, or rephrase the query and "
-                "retry in a few minutes."
-            ),
-            "query": query,
-            "max_results": max_results,
-        }
-    ]
+    return {
+        "query": query,
+        "count": 0,
+        "results": [],
+        "max_results": max_results,
+        "error": f"arXiv API call failed: {type(last_err).__name__}: {last_err}",
+        "hint": (
+            "arXiv is likely rate-limiting this IP. Rate limits typically "
+            "clear within 15-30 minutes. In the meantime, try the "
+            "`search_papers` tool to query the local RAG corpus of "
+            "pre-downloaded Ising-model papers, or rephrase the query and "
+            "retry in a few minutes."
+        ),
+    }
 
 
 # ======================================================================
