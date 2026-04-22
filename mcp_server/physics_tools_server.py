@@ -87,6 +87,17 @@ def search_arxiv(query: str, max_results: int = 5) -> dict[str, Any]:
     clients — including smolagents' ``mcpadapt`` bridge — only read the
     first block. Returning a single top-level dict guarantees the whole
     payload arrives in one content block.
+
+    **Important for agent code.** MCP serialises tool results as JSON
+    strings on the wire. When called via a ``CodeAgent`` + ``mcpadapt``,
+    the agent receives the return value as a ``str``, not a ``dict``.
+    The agent must call ``json.loads(result)`` before indexing into it::
+
+        import json
+        raw = search_arxiv(query="Ising", max_results=3)
+        data = json.loads(raw)
+        for paper in data["results"]:
+            print(paper["arxiv_id"], paper["title"])
     """
     # Clamp max_results to a sane range so the agent can't DoS the arXiv API.
     max_results = max(1, min(int(max_results), 20))
