@@ -21,6 +21,9 @@ data/papers/
 chroma_db/
 *.pdf
 
+# Reflexion memory (Module 1.4) -- regenerated per session, starts empty
+data/reflexion_memory.json
+
 # Editor / OS
 .vscode/
 .idea/
