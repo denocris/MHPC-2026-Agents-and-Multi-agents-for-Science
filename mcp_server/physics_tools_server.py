@@ -188,6 +188,7 @@ def run_ising_simulation(
     algorithm: str = "wolff",
     thermalization_steps: int | None = None,
     seed: int | None = None,
+    include_configuration: bool = False,
 ) -> dict[str, Any]:
     """Run a 2D Ising-model Monte Carlo simulation and return observables.
 
@@ -209,16 +210,28 @@ def run_ising_simulation(
             Defaults to max(100, num_steps // 5) for Metropolis and
             max(50, num_steps // 5) for Wolff.
         seed: optional RNG seed for reproducibility.
+        include_configuration: if ``True``, the returned dict includes
+            the full L x L ``final_configuration`` spin grid. Defaults
+            to ``False`` -- the grid is expensive to serialise and, more
+            importantly, a 32x32 grid is ~1000 entries of JSON that
+            derails small-model (7B-class) agents by flooding the
+            ReAct Observation with irrelevant tokens. Leave at the
+            default unless you specifically need the microstate (e.g.
+            for a visualisation notebook).
 
     Returns:
         A dict with ``magnetization_mean``, ``magnetization_std``,
         ``energy_mean``, ``energy_std``, ``specific_heat``,
-        ``susceptibility``, ``final_configuration`` (L x L list of +/-1),
-        plus bookkeeping fields (``algorithm``, ``lattice_size``,
-        ``temperature``, ``num_steps``, ``thermalization_steps``,
-        ``acceptance_rate``, ``mean_cluster_size``, ``elapsed_seconds``).
+        ``susceptibility``, plus bookkeeping fields (``algorithm``,
+        ``lattice_size``, ``temperature``, ``num_steps``,
+        ``thermalization_steps``, ``acceptance_rate``,
+        ``mean_cluster_size``, ``elapsed_seconds``).
+
+        When ``include_configuration=True``, an additional
+        ``final_configuration`` key is included (an L x L list of
+        +/-1 spins -- the last microstate of the measurement phase).
     """
-    return _run_ising(
+    result = _run_ising(
         lattice_size=lattice_size,
         temperature=temperature,
         num_steps=num_steps,
@@ -226,6 +239,13 @@ def run_ising_simulation(
         thermalization_steps=thermalization_steps,
         seed=seed,
     )
+    # Strip the big field by default -- see the include_configuration docstring
+    # above for the motivation. The underlying ising_simulator API is untouched,
+    # so any direct Python caller that wants the grid can still import
+    # `ising_simulator.run_ising_simulation` and get the full dict as before.
+    if not include_configuration:
+        result.pop("final_configuration", None)
+    return result
 
 
 # ======================================================================
