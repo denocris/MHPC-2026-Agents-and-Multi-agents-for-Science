@@ -1,14 +1,14 @@
 # From Single Agents to Multi-Agent Systems
 
-## A Hands-On Course for Physics, Mathematics & Computer Science Researchers
+## A Hands-On Course for the Master in HPC (MHPC) 2026
 
-**Duration:** ~6–7 hours total — **SA Part** (Single-Agent): ~4 hours, **MAS Part** (Multi-Agent Systems): ~2–2.5 hours.
+**Duration:** 3 days 
 **Audience:** PhD students and Postdocs in physics, mathematics, neuroscience, and computer science. Background in ML/DL assumed.
 **Stack:** Python 3.11+, Ollama (local LLMs), smolagents (HuggingFace), CrewAI, MCP protocol, a hand-rolled A2A message bus.
-**Physics scenario:** Studying the phase transition of the 2D Ising model — from literature review to simulation to multi-agent cross-validation.
+**Physics scenario:** Studying the phase transition of the 2D Ising model, from literature review to simulation to multi-agent cross-validation.
 
 **Philosophy:**
-1. Every concept is introduced incrementally — each module adds one capability on top of the previous one.
+1. Every concept is introduced incrementally: each module adds one capability on top of the previous one.
 2. Students always see the code, never just the abstraction.
 3. A single coherent physics use case threads through both parts: by the end, students have built a multi-agent physics research team that derives predictions, runs simulations, cross-checks results, and runs over a typed message-bus with a machine-verifiable isolation contract.
 
