@@ -1,8 +1,6 @@
 # From Single Agents to Multi-Agent Systems
 
-Hands-on course (3 days, MHPC 2026) — building single-agent and multi-agent LLM systems with the 2D Ising model as the running physics use case.
-
-Full syllabus: [agents-course-outline.md](agents-course-outline.md).
+Hands-on course (3 days, MHPC 2026): building single-agent and multi-agent LLM systems with the 2D Ising model as the running physics use case.
 
 ---
 
