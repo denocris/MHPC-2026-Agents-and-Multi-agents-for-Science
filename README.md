@@ -2,6 +2,10 @@
 
 Hands-on course (3 days, MHPC 2026): building single-agent and multi-agent LLM systems with the 2D Ising model as the running physics use case.
 
+## Course Abstract
+
+LLMs are rapidly evolving from passive text generators into autonomous agents capable of reasoning, using tools, and collaborating with each other. This hands-on course bridges the gap between understanding LLMs and building functional AI agent systems, using a single physics use case (the phase transition of the 2D Ising model) as a concrete use case. In the first part, the focus is on a single agent. We will incrementally construct a Physics Research Assistant from scratch. Starting from raw API calls to a local LLM, each module adds exactly one capability: step-by-step reasoning, grounding in scientific literature through RAG, execution of Monte Carlo simulations via standardized tool protocols, and self-correction through reflection mechanisms. Every component is verified against the model's exact analytical solutions. In the second part, the focus will be on multi-agent systems. The single agent is decomposed into a team of specialized agents (a Theorist, an Experimentalist, and a Scholar) each with distinct roles and tools. We will explore three increasingly rigorous coordination architectures on the same benchmark task: a sequential pipeline, an adversarial debate, and a typed message bus with machine-verifiable isolation guarantees. Each architecture is compared on identical inputs, making trade-offs between role clarity, error detection, and reliability directly observable. The course surfaces real failure modes of small local models and teaches practical engineering techniques to mitigate them.
+
 ---
 
 ## Prerequisites
