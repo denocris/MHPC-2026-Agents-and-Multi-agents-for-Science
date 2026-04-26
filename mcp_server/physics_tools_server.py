@@ -3,7 +3,7 @@ mcp_server/physics_tools_server.py
 ==================================
 
 Model Context Protocol (MCP) server exposing the physics tools that the
-Day 1 agent uses in Module 1.3.
+agent uses in Module 1.3.
 
 Two tools are exposed:
 

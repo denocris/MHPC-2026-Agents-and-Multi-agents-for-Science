@@ -32,6 +32,9 @@ ollama serve
 
 # Back in your normal terminal:
 ollama pull qwen2.5:7b
+
+# We migh also play with:
+ollama pull llama3.1:8b
 ```
 
 Verify Ollama answers:
