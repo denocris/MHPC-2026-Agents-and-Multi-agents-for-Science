@@ -1,4 +1,4 @@
-# From Single Agents to Multi-Agent Systems
+# From Single AI Agent to Multi-Agent Systems for Science
 
 Hands-on course (3 days, MHPC 2026): building single-agent and multi-agent LLM systems with the 2D Ising model as the running physics use case.
 
