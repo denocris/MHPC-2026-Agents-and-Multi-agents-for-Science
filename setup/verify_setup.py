@@ -10,7 +10,7 @@ each one. Exit code is 0 iff every check passes.
 Usage::
 
     python setup/verify_setup.py
-    python setup/verify_setup.py --model qwen3.5:9b
+    python setup/verify_setup.py --model qwen2.5:7b
     python setup/verify_setup.py --ollama-url http://localhost:11434
     python setup/verify_setup.py --quick        # skip the MCP server check
 
@@ -56,7 +56,7 @@ REQUIRED_PACKAGES: list[tuple[str, str]] = [
 ]
 
 DEFAULT_OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-DEFAULT_MODEL = os.environ.get("ISING_OLLAMA_MODEL", "qwen3.5:4b")
+DEFAULT_MODEL = os.environ.get("ISING_OLLAMA_MODEL", "qwen2.5:7b")
 
 
 @dataclass
